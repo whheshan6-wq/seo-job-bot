@@ -1,0 +1,51 @@
+
+name: Run SEO Content Bot
+
+on:
+  workflow_dispatch:
+    inputs:
+      public_url:
+        description: 'Public website URL'
+        required: true
+        type: string
+      keyword:
+        description: 'SEO keyword'
+        required: false
+        type: string
+      job_title:
+        description: 'Job title'
+        required: false
+        type: string
+      notes:
+        description: 'Job notes'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  inspect_public_page:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      BOT_URL: ${{ inputs.public_url }}
+      BOT_KEYWORD: ${{ inputs.keyword }}
+      BOT_JOB_TITLE: ${{ inputs.job_title }}
+      BOT_NOTES: ${{ inputs.notes }}
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+      - name: Python setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Analyze public page
+        run: python seo_bot.py --output reports
+      - name: Downloadable SEO report
+        uses: actions/upload-artifact@v4
+        with:
+          name: SEO-Report
+          path: reports/
+          if-no-files-found: error
+          retention-days: 30
